@@ -46,7 +46,7 @@ public class IndexController {
         //记录访问信息
         userService.record(request.getRequestURL(),request.getContextPath(),request.getRemoteAddr());
         //列出帖子
-        PageBean<Post> pageBean = postService.listPostByTime(1);
+        PageBean<Post> pageBean = postService.listPostByTime(1,false );
         //列出用户
         List<User> userList = userService.listUserByTime();
         //列出活跃用户

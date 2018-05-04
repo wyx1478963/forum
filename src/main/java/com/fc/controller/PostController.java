@@ -11,8 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -53,7 +51,7 @@ public class PostController {
     //按时间，倒序，列出帖子
     @RequestMapping("/listPostByTime.do")
     public String listPostByTime(int curPage,Model model){
-        PageBean<Post> pageBean = postService.listPostByTime(curPage);
+        PageBean<Post> pageBean = postService.listPostByTime(curPage,false );
         List<User> userList = userService.listUserByTime();
         List<User> hotUserList = userService.listUserByHot();
         model.addAttribute("pageBean",pageBean);
@@ -64,7 +62,7 @@ public class PostController {
 
     @RequestMapping("/listPostByTimeAndTopic.do")
     public String listPostByTimeAndTopic(@RequestParam("tid")int tid, int curPage, Model model){
-        PageBean<Post> pageBean = postService.listPostByTimeAndTopic(curPage,tid);
+        PageBean<Post> pageBean = postService.listPostByTimeAndTopic(curPage,tid, false);
         List<User> userList = userService.listUserByTime();
         List<User> hotUserList = userService.listUserByHot();
         model.addAttribute("pageBean",pageBean);

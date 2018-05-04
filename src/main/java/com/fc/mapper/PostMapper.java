@@ -22,6 +22,8 @@ public interface PostMapper {
 
     int selectPostCount();
 
+    int selectTopicPostCount(@Param("tid")int tid);
+
     Post getPostByPid(int pid);
 
     void updateReplyCount(int pid);
@@ -40,5 +42,7 @@ public interface PostMapper {
     ContentInfo getContentInfoByPostId(@Param("postId") int postId);
 
     List<ContentInfo> getAllContentInfo();
+
+    List<Post> getHotPost();
 
 }

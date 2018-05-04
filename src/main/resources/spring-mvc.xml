@@ -39,8 +39,10 @@
                 <property name="excludedUrls">
                     <list>
                         <value>/toIndex.do</value>
+                        <value>/toHot.do</value>
                         <value>/listPostByTimeAndTopic.do</value>
                         <value>/toTopicIndex.do</value>
+                        <value>/toHotTopic.do</value>
                         <value>/upload.do</value>
                         <value>/toLogin.do</value>
                         <value>/register.do</value>

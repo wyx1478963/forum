@@ -3,6 +3,7 @@ package com.fc.service;
 
 import com.fc.mapper.PostMapper;
 import com.fc.mapper.UserViewHistoryMapper;
+import com.fc.model.Post;
 import com.fc.model.UserViewHistory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -11,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -85,6 +85,10 @@ public class HotRecommendService {
         return resultPostId;
     }
 
+    public List<Post> getHotPost() {
+       return postMapper.getHotPost();
+    }
+
     public List<Integer> getPostListByModelAndTopic(String modelResult, int topicId) {
         String[] postIdStrArray = modelResult.split(" ");
         List<Integer> postIdListFromModel = new ArrayList<>();
@@ -107,6 +111,19 @@ public class HotRecommendService {
         }
 
         postIdListFromModel.retainAll(postTopicList);
+        return postIdListFromModel;
+    }
+
+    public List<Integer> getPostListByModel(String modelResult) {
+        String[] postIdStrArray = modelResult.split(" ");
+        List<Integer> postIdListFromModel = new ArrayList<>();
+        CollectionUtils.collect(Arrays.asList(postIdStrArray), new Transformer() {
+            @Override
+            public Object transform(Object o) {
+                return Integer.parseInt(o.toString());
+            }
+        }, postIdListFromModel);
+
         return postIdListFromModel;
     }
 

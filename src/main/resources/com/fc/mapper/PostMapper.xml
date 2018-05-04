@@ -65,9 +65,17 @@
         order by p.reply_time desc limit #{offset},#{limit}
     </select>
 
+    <select id="getHotPost" resultMap="postMap">
+        select p.pid,p.title,p.publish_time,p.reply_time,p.reply_count,p.like_count,p.scan_count from post p order by p.scan_count desc
+    </select>
+
 
     <select id="selectPostCount" resultType="int">
         select count(*) from post
+    </select>
+
+    <select id="selectTopicPostCount" resultType="int">
+        select count(*) from post where tid = #{tid}
     </select>
 
     <select id="getPostByPid" resultMap="post2Map">

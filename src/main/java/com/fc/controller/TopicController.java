@@ -5,7 +5,6 @@ import com.fc.model.Post;
 import com.fc.model.Topic;
 import com.fc.model.User;
 import com.fc.service.PostService;
-import com.fc.service.QiniuService;
 import com.fc.service.TopicService;
 import com.fc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.jws.WebParam;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -58,7 +56,7 @@ public class TopicController {
         //记录访问信息
         userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
         //列出帖子
-        PageBean<Post> pageBean = postService.listPostByTimeAndTopic(1, tid);
+        PageBean<Post> pageBean = postService.listPostByTimeAndTopic(1, tid, false);
         //列出用户
         List<User> userList = userService.listUserByTime();
         //列出活跃用户
@@ -67,7 +65,7 @@ public class TopicController {
         model.addAttribute("pageBean", pageBean);
         model.addAttribute("userList", userList);
         model.addAttribute("hotUserList", hotUserList);
-        model.addAttribute("tid",tid);
+        model.addAttribute("tid", tid);
         return "topicIndex";
     }
 }

@@ -21,9 +21,9 @@
 			<div class="post">
 				<div class="post-wrap">
 					<div class="post-choice">
-						<a href="#" class="post-choice-current">最近</a>
-						<a href="#">最热</a>
-						<a href="#" class="post-choice-last">精华</a>
+						<a href="toIndex.do" class="post-choice-current">最近</a>
+						<a href="toHot.do">最热</a>
+						<a href="toSimilar.do" class="post-choice-last">相似文章</a>
 					</div>
 
 					<ul class="post-list">
