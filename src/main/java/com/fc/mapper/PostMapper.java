@@ -18,6 +18,8 @@ public interface PostMapper {
 
     List<Post> listPostByTime(@Param("offset") int offset, @Param("limit") int limit);
 
+    List<Post> listPostByTimeAndTopic(@Param("offset") int offset, @Param("limit") int limit,@Param("tid")int tid);
+
     int selectPostCount();
 
     Post getPostByPid(int pid);

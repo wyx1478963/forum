@@ -95,6 +95,38 @@ public class PostService {
         return pageBean;
     }
 
+    //每个Topic按时间列出帖子
+    public PageBean<Post> listPostByTimeAndTopic(int curPage,int tid) {
+        //每页记录数，从哪开始
+        int limit = 8;
+        int offset = (curPage-1) * limit;
+        //获得总记录数，总页数
+        int allCount = postMapper.selectPostCount();
+        int allPage = 0;
+        if (allCount <= limit) {
+            allPage = 1;
+        } else if (allCount / limit == 0) {
+            allPage = allCount / limit;
+        } else {
+            allPage = allCount / limit + 1;
+        }
+        //分页得到数据列表
+        List<Post> postList = postMapper.listPostByTimeAndTopic(offset,limit,tid);
+        Jedis jedis = jedisPool.getResource();
+        for(Post post : postList){
+            post.setLikeCount((int)(long)jedis.scard(post.getPid()+":like"));
+        }
+
+        //构造PageBean
+        PageBean<Post> pageBean = new PageBean<>(allPage,curPage);
+        pageBean.setList(postList);
+
+        if(jedis!=null){
+            jedisPool.returnResource(jedis);
+        }
+        return pageBean;
+    }
+
     public Post getPostByPid(int pid) {
         //更新浏览数
         postMapper.updateScanCount(pid);

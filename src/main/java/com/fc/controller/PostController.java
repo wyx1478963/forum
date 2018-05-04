@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -59,6 +60,18 @@ public class PostController {
         model.addAttribute("userList",userList);
         model.addAttribute("hotUserList",hotUserList);
         return "index";
+    }
+
+    @RequestMapping("/listPostByTimeAndTopic.do")
+    public String listPostByTimeAndTopic(@RequestParam("tid")int tid, int curPage, Model model){
+        PageBean<Post> pageBean = postService.listPostByTimeAndTopic(curPage,tid);
+        List<User> userList = userService.listUserByTime();
+        List<User> hotUserList = userService.listUserByHot();
+        model.addAttribute("pageBean",pageBean);
+        model.addAttribute("userList",userList);
+        model.addAttribute("hotUserList",hotUserList);
+        model.addAttribute("tid",tid);
+        return "topicIndex";
     }
 
     //去帖子详情页面
