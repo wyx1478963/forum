@@ -1,6 +1,7 @@
 package com.fc.service
 
-import com.sohu.CFRecommend.data.entity.CFModel
+
+import com.fc.model.CFModel
 import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -24,7 +25,7 @@ class ALSFilterService {
                      numUserBlocks: Int = -1,
                      numProductBlocks: Int = -1,
                      implicitPrefs: Boolean = false,
-                     url: String = "jdbc:mysql://localhost:3306/mplive?useUnicode=true&characterEncoding=UTF-8&user=root&password=123456")
+                     url: String = "jdbc:mysql://localhost:3306/df?useUnicode=true&characterEncoding=UTF-8&user=root&password=123456")
 
 
   def run() = {
@@ -44,10 +45,10 @@ class ALSFilterService {
       Map("url" -> defaultParams.url,
         "dbtable" -> "user_view_history")).load()
 
-    val dataTrain = jbdf.rdd.map(t => "" + t(0) + "," + t(1) + ",3")
+    val dataTrain = jbdf.rdd.map(t => "" + t(1) + "," + t(2) + ",3")
 
-    val ratings = dataTrain.map(_.split(",") match { case Array(user, item, rate) =>
-      Rating(user.toInt, item.toInt, rate.toDouble)
+    val ratings = dataTrain.map(_.split(",") match { case Array(uid, pid, rate) =>
+      Rating(uid.toInt, pid.toInt, rate.toDouble)
     }).cache()
 
     CFModel.model = evaluateMode(defaultParams, ratings)

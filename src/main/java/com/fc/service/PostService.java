@@ -1,12 +1,10 @@
 package com.fc.service;
 
 import com.fc.async.MessageTask;
-import com.fc.mapper.MessageMapper;
-import com.fc.mapper.PostMapper;
-import com.fc.mapper.ReplyMapper;
-import com.fc.mapper.UserMapper;
+import com.fc.mapper.*;
 import com.fc.model.PageBean;
 import com.fc.model.Post;
+import com.fc.model.UserViewHistory;
 import com.fc.util.MyConstant;
 import com.fc.util.MyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +37,9 @@ public class PostService {
 
     @Autowired
     private TaskExecutor taskExecutor;
+
+    @Autowired
+    private UserViewHistoryMapper userViewHistoryMapper;
 
     //根据uid，获得帖子列表
     public List<Post> getPostList(int uid) {
@@ -136,6 +137,13 @@ public class PostService {
             jedisPool.returnResource(jedis);
         }
         return result;
+    }
+
+    public void visitPostRecord(int pid,int uid) {
+        UserViewHistory userViewHistory = new UserViewHistory();
+        userViewHistory.setPid(pid);
+        userViewHistory.setUid(uid);
+        userViewHistoryMapper.insertUserViewHistory(userViewHistory);
     }
 }
 

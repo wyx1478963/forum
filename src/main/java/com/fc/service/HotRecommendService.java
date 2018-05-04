@@ -1,155 +1,114 @@
 package com.fc.service;
 
 
+import com.fc.mapper.PostMapper;
+import com.fc.mapper.UserViewHistoryMapper;
+import com.fc.model.UserViewHistory;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 //todo: finish
 public class HotRecommendService {
 
+    @Autowired
+    UserViewHistoryMapper userViewHistoryMapper;
+
+    @Autowired
+    PostMapper postMapper;
+
     Logger logger = LoggerFactory.getLogger(this.getClass());
-    @Resource
-    private MpLiveMapper mpLiveMapper;
 
-    @Resource
-    private FeedTagRelationMapper feedTagRelationMapper;
-
-    private static final List<UserInfo> userInfosPool = new ArrayList();
-    private static final HashMap<Long, Long> userViewHistory = new HashMap<>();
-    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-
-    public List<UserInfo> GetIdFromUserRecharge() {
-        return mpLiveMapper.ids();
-    }
-
-    public List<String> getRecommendById(Long id) {
-        return new ArrayList<>();
-    }
+    private static final List<UserViewHistory> userViewHistoryPool = new ArrayList<>();
+    private static final Map<Integer, List<Integer>> topicId2PostIdListMap = new HashMap<>();
 
     /**
      * 加载用户浏览记录
      */
     public void loadUserInfoPool() {
         long start = System.currentTimeMillis();
-//        LocalDateTime standardTime = LocalDateTime.now();
-//        String beginTime = dateTimeFormatter.format(standardTime.minusDays(7));
-//        Timestamp startTime = Timestamp.valueOf(beginTime);
-        List<UserInfo> userInfoList = mpLiveMapper.getUserInfoList();
-        synchronized (userInfosPool) {
-            userInfosPool.clear();
-            userInfosPool.addAll(userInfoList);
+        List<UserViewHistory> userViewHistoryList = userViewHistoryMapper.getAllUserViewHistory();
+        synchronized (userViewHistoryPool) {
+            userViewHistoryPool.clear();
+            userViewHistoryPool.addAll(userViewHistoryList);
         }
 
         long end = System.currentTimeMillis();
         logger.info(String.format("load UserInfosPool in %dms", end - start));
     }
 
-    public List<Long> getHotMediaFeed(HashSet<Long> feedTagRelationsList) {
-        HashMap<Long, Integer> hotBrowseByTag = new HashMap<>();
-        List<Long> feedList = new ArrayList<>();
-        if (userInfosPool.isEmpty())
+    /**
+     * 根据访问记录 获得最热文章
+     *
+     * @param topicId
+     * @return
+     */
+    public List<Integer> getHotPostByTopic(int topicId) {
+        if (userViewHistoryPool.isEmpty())
             loadUserInfoPool();
-        for (UserInfo userInfo : userInfosPool) {
-            Long feedId = userInfo.getFeedId();
-            if (feedTagRelationsList.contains(feedId)) {
-                if (!hotBrowseByTag.containsKey(feedId))
-                    hotBrowseByTag.put(feedId, 1);
+
+        List<Integer> postTopicList = new ArrayList<>();
+        if (topicId2PostIdListMap.containsKey(topicId)) {
+            postTopicList = topicId2PostIdListMap.get(topicId);
+        }
+        if ( postTopicList.isEmpty()) {
+            postTopicList = postMapper.listPostOfTopic(topicId);
+            synchronized (topicId2PostIdListMap) {
+                topicId2PostIdListMap.put(topicId, postTopicList);
+            }
+        }
+
+        Map<Integer, Integer> postVisitStatMap = new HashMap<>();
+
+        for (UserViewHistory userInfo : userViewHistoryPool) {
+            int postId = userInfo.getPid();
+            if (postTopicList.contains(postId)) {
+                if (!postVisitStatMap.containsKey(postId))
+                    postVisitStatMap.put(postId, 1);
                 else
-                    hotBrowseByTag.put(feedId, hotBrowseByTag.get(feedId) + 1);
+                    postVisitStatMap.put(postId, postVisitStatMap.get(postId) + 1);
             }
         }
-        List<Map.Entry<Long, Integer>> hotBrowses = getHotBrowse(hotBrowseByTag);
-        hotBrowses.forEach(o -> {
-            feedList.add(o.getKey());
-        });
-        return feedList;
+
+        List<Map.Entry<Integer, Integer>> entryList = new ArrayList<>(postVisitStatMap.entrySet());
+        entryList.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
+        List<Integer> resultPostId = entryList.stream().map(Map.Entry::getKey).collect(Collectors.toCollection(ArrayList::new));
+
+        return resultPostId;
     }
 
-    public List<Map.Entry<Long, Integer>> getHotBrowse(HashMap<Long, Integer> hotBrowse) {
-        List<Map.Entry<Long, Integer>> hotBrowses = new ArrayList<Map.Entry<Long, Integer>>(hotBrowse.entrySet());
-        Collections.sort(hotBrowses, new Comparator<Map.Entry<Long, Integer>>() {
-            public int compare(Map.Entry<Long, Integer> o1, Map.Entry<Long, Integer> o2) {
-                return (o2.getValue() - o1.getValue());
+    public List<Integer> getPostListByModelAndTopic(String modelResult, int topicId) {
+        String[] postIdStrArray = modelResult.split(" ");
+        List<Integer> postIdListFromModel = new ArrayList<>();
+        CollectionUtils.collect(Arrays.asList(postIdStrArray), new Transformer() {
+            @Override
+            public Object transform(Object o) {
+                return Integer.parseInt(o.toString());
             }
-        });
-        return hotBrowses;
-    }
+        }, postIdListFromModel);
 
-    public List<Long> getHotMediaFeedByChannelId(Long channelId) {
-        List<Long> tagList = feedTagRelationMapper.getFeedTagByChannelId(channelId);
-        HashSet<Long> feedTagRelationsByChannel = new HashSet<>();
-        for (Long tag : tagList) {
-            feedTagRelationsByChannel.addAll(feedTagRelationMapper.getFeedTagRelationByTag(tag));
+        List<Integer> postTopicList = new ArrayList<>();
+        if (topicId2PostIdListMap.containsKey(topicId)) {
+            postTopicList = topicId2PostIdListMap.get(topicId);
         }
-        return getHotMediaFeed(feedTagRelationsByChannel);
-    }
-
-    public List<Long> getHotMediaFeedByTagId(Long tagId) {
-        long start = System.currentTimeMillis();
-        HashSet<Long> feedTagRelationsByTag = feedTagRelationMapper.getFeedTagRelationByTag(tagId);
-        long end = System.currentTimeMillis();
-        logger.info(String.format("getFeedTagRelationByTag in %dms", end - start));
-        return getHotMediaFeed(feedTagRelationsByTag);
-    }
-
-    public List<Long> getAllHotMediaFeed() {
-        HashSet<Long> feedTagRelationsByTag = feedTagRelationMapper.getAllFeedTagRelation();
-        return getHotMediaFeed(feedTagRelationsByTag);
-    }
-
-
-    public void calcUserViewHistory() {
-        if (userInfosPool.isEmpty())
-            System.out.println("userInfo.isEmpty()");
-            loadUserInfoPool();
-        for (UserInfo userInfo : userInfosPool) {
-            Long userId = userInfo.getUserId();
-            if (!userViewHistory.containsKey(userId))
-                userViewHistory.put(userId, 1L);
-            else
-                userViewHistory.put(userId, userViewHistory.get(userId) + 1);
-        }
-    }
-
-    public Boolean isOldUser(Long id) {
-        if (userViewHistory.isEmpty())
-            calcUserViewHistory();
-        if (!userViewHistory.containsKey(id))
-            return false;
-        else if (userViewHistory.get(id) >= 5)
-            return true;
-        else
-            return false;
-
-    }
-
-    public List<Long> filterWithTagOrChannel(String result, Long tagId, Long channelId) {
-        List<Long> resultList = new ArrayList<>();
-        String[] arr = result.split(" ");
-        Long[] num = new Long[arr.length];
-        for (int i = 0; i < arr.length; i++) {
-            num[i] = Long.parseLong(arr[i]);
-        }
-        List<Long> arrayList = Arrays.asList(num);
-        HashSet<Long> feedByTagOrChannel = new HashSet<>();
-        if (tagId != -1)
-            feedByTagOrChannel = feedTagRelationMapper.getFeedTagRelationByTag(tagId);
-        else if (channelId != -1) {
-            List<Long> feedTagList = feedTagRelationMapper.getFeedTagByChannelId(channelId);
-            for (Long tag : feedTagList) {
-                feedByTagOrChannel.addAll(feedTagRelationMapper.getFeedTagRelationByTag(tag));
+        if (postTopicList.isEmpty()) {
+            postTopicList = postMapper.listPostOfTopic(topicId);
+            synchronized (topicId2PostIdListMap) {
+                topicId2PostIdListMap.put(topicId, postTopicList);
             }
         }
-        resultList.addAll(arrayList);
-        resultList.retainAll(feedByTagOrChannel);
-        return resultList;
+
+        postIdListFromModel.retainAll(postTopicList);
+        return postIdListFromModel;
     }
+
 
 }

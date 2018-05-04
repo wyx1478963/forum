@@ -32,6 +32,13 @@
         <association property="user" javaType="com.fc.model.User" resultMap="userMap" />
     </resultMap>
 
+    <resultMap id="contentInfoMap" type="com.fc.model.ContentInfo">
+        <id column="pid" property="id" />
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="uid" property="authorId"/>
+    </resultMap>
+
 
     <select id="listPostByUid" resultType="com.fc.model.Post">
         select uid,pid,title,publish_time from post where uid=#{uid}
@@ -80,6 +87,12 @@
 
     <select id="getTitleByPid" resultType="String">
         select title from post where pid=#{pid}
+    </select>
+    <select id="getContentInfoByPostId" resultMap="contentInfoMap">
+        select * from post where pid = #{postId};
+    </select>
+    <select id="getAllContentInfo" resultMap="contentInfoMap">
+        select * from post;
     </select>
 </mapper>
 

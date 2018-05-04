@@ -75,7 +75,9 @@ public class PostController {
         boolean liked = false;
         if(sessionUid!=null){
             liked = postService.getLikeStatus(pid,sessionUid);
+            postService.visitPostRecord(pid,sessionUid);
         }
+
         //向模型中添加数据
         model.addAttribute("post",post);
         model.addAttribute("replyList",replyList);

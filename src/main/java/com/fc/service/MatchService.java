@@ -1,6 +1,7 @@
 package com.fc.service;
 
 
+import com.fc.mapper.PostMapper;
 import com.fc.model.ContentInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +20,15 @@ public class MatchService {
     @Resource
     private MediaPreProcessor mediaPreProcessor;
 
+    @Resource
+    private PostMapper postMapper;
+
     private static final List<ContentInfo> contentInfoPool = new ArrayList();
 
     public void loadContentInfoPool() {
         long start = System.currentTimeMillis();
         // get content title and id
-        List<ContentInfo> userInfoList = new ArrayList<>();
+        List<ContentInfo> userInfoList = postMapper.getAllContentInfo();
         synchronized (contentInfoPool) {
             contentInfoPool.clear();
             contentInfoPool.addAll(userInfoList);
@@ -34,12 +38,11 @@ public class MatchService {
         logger.info(String.format("load UserContentPool in %dms", end - start));
     }
 
-    public List<Long> matchSimilarMediaById(Long id) {
+    public List<Long> matchSimilarMediaById(int postId) {
         if (contentInfoPool.isEmpty())
             loadContentInfoPool();
         List<ContentInfo> contentInfos = contentInfoPool;
-        //todo: get contentInfo by id
-        ContentInfo contentInfoById = new ContentInfo();
+        ContentInfo contentInfoById = postMapper.getContentInfoByPostId(postId);
         if (contentInfoById == null)
             return null;
         double[] vector = mediaPreProcessor.convertMediaToVectorByTitle(contentInfoById);
