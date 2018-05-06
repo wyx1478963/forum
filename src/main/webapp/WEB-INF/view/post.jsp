@@ -129,7 +129,7 @@
 		<!-- 主体右部分 -->
 		<div class="main-right">
 			<div class="hot-user">
-				<div class="clearfix"><div class="hot-user-title"><span></span>&nbsp;推荐网站</div></div>
+				<div class="clearfix"><div class="hot-user-title"><span></span>&nbsp;相似文章</div></div>
 				<ul class="hot-user-list">
                     <c:forEach items="${pageBean.list}" var="post">
                         <%--一个wrap开始--%>
