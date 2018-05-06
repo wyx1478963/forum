@@ -1,6 +1,5 @@
 package com.fc.controller;
 
-import com.fc.mapper.PostMapper;
 import com.fc.model.PageBean;
 import com.fc.model.Post;
 import com.fc.model.User;
@@ -13,8 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Collections;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -41,41 +39,66 @@ public class RecommendController {
     /**
      * 推荐流（基于topic）
      *
-     * @param userId
-     * @param num
+     * @param tid topic id
      * @return
      */
-    @RequestMapping(value = "/recommend.do", method = RequestMethod.GET)
-    public List<Integer> getItemByUserIdAndTopic(@RequestParam("userId") int userId,
-                                         @RequestParam("topicId") int topicId,
-                                         @RequestParam(defaultValue = "10") int num,
-                                         @RequestParam(defaultValue = "0") int page) {
+    @RequestMapping("/recommendTopic.do")
+    public String recommendTopic(
+            @RequestParam("tid") int tid,
+            HttpServletRequest request,
+            Model model, HttpSession session) {
+        int userId = (int) session.getAttribute("uid");
+
         int multiple = 10;
-        String result = alsFilterService.predictMovie(userId, num * multiple);
-        List<Integer> feedList = hotRecommendService.getPostListByModelAndTopic(result, topicId);
-        return selectByPage(feedList, num, page);
+        String result = alsFilterService.predictMovie(userId, 10 * multiple);
+        List<Integer> postList = hotRecommendService.getPostListByModelAndTopic(result, tid);
+        System.out.println(request.getRemoteAddr());
+        //记录访问信息
+        userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
+        //列出帖子
+        PageBean<Post> pageBean = postService.listPostByTimeAndTopicAndRecommend(postList, 1, tid, true);
+        //列出用户
+        List<User> userList = userService.listUserByTime();
+        //列出活跃用户
+        List<User> hotUserList = userService.listUserByHot();
+        //向模型中添加数据
+        model.addAttribute("pageBean", pageBean);
+        model.addAttribute("userList", userList);
+        model.addAttribute("hotUserList", hotUserList);
+        model.addAttribute("tid", tid);
+        return "topicIndex";
     }
 
     /**
-     * 推荐流
+     * 主页推荐流
      *
-     * @param userId
-     * @param num
+     * @param
+     * @param
      * @return
      */
-    @RequestMapping(value = "/recommendTopic.do", method = RequestMethod.GET)
-    public List<Integer> getItemByUserId(@RequestParam("userId") int userId,
-                                         @RequestParam("topicId") int topicId,
-                                         @RequestParam(defaultValue = "10") int num,
-                                         @RequestParam(defaultValue = "0") int page) {
+    @RequestMapping("/recommend.do")
+    public String recommend(HttpServletRequest request, Model model, HttpSession session) {
+        int userId = (int) session.getAttribute("uid");
         int multiple = 10;
-        String result = alsFilterService.predictMovie(userId, num * multiple);
-        List<Integer> feedList = hotRecommendService.getPostListByModel(result);
-        return selectByPage(feedList, num, page);
+        String result = alsFilterService.predictMovie(userId, 10 * multiple);
+        List<Integer> postList = hotRecommendService.getPostListByModel(result);
+        System.out.println(request.getRemoteAddr());
+        //记录访问信息
+        System.out.println(request.getRemoteAddr());
+        //记录访问信息
+        userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
+        //列出帖子
+        PageBean<Post> pageBean = postService.listPostByTimeAndRecommend(postList, 1);
+        //列出用户
+        List<User> userList = userService.listUserByTime();
+        //列出活跃用户
+        List<User> hotUserList = userService.listUserByHot();
+        //向模型中添加数据
+        model.addAttribute("pageBean", pageBean);
+        model.addAttribute("userList", userList);
+        model.addAttribute("hotUserList", hotUserList);
+        return "index";
     }
-
-
-
 
 
     /**
@@ -98,58 +121,33 @@ public class RecommendController {
         model.addAttribute("pageBean", pageBean);
         model.addAttribute("userList", userList);
         model.addAttribute("hotUserList", hotUserList);
-        model.addAttribute("tid",tid);
+        model.addAttribute("tid", tid);
         return "topicIndex";
     }
 
-    /**
-     * 相似文章（根据post,基于topic）
-     *
-     * @return
-     */
-    @RequestMapping("/toSimilarTopic.do")
-    public String toSimilarTopicIndex(@RequestParam("tid") int tid, Model model, HttpServletRequest request) {
-        System.out.println(request.getRemoteAddr());
-        //记录访问信息
-        userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
-        //列出帖子
-        PageBean<Post> pageBean = postService.listPostByTimeAndTopic(1, tid, true);
-        //列出用户
-        List<User> userList = userService.listUserByTime();
-        //列出活跃用户
-        List<User> hotUserList = userService.listUserByHot();
-        //向模型中添加数据
-        model.addAttribute("pageBean", pageBean);
-        model.addAttribute("userList", userList);
-        model.addAttribute("hotUserList", hotUserList);
-        model.addAttribute("tid",tid);
-        return "topicIndex";
-    }
-
-    /**
-     * 相似文章（根据post）
-     *
-     * @return
-     */
-    @RequestMapping("/toSimilar.do")
-    public String toSimilarIndex(Model model, HttpServletRequest request) {
-        System.out.println(request.getRemoteAddr());
-        //记录访问信息
-        userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
-        //列出帖子
-        PageBean<Post> pageBean = postService.listPostByTime(1, true);
-        //列出用户
-        List<User> userList = userService.listUserByTime();
-        //列出活跃用户
-        List<User> hotUserList = userService.listUserByHot();
-        //向模型中添加数据
-        model.addAttribute("pageBean", pageBean);
-        model.addAttribute("userList", userList);
-        model.addAttribute("hotUserList", hotUserList);
-        return "index";
-    }
-
-
+//    /**
+//     * 相似文章（根据post,基于topic）
+//     *
+//     * @return
+//     */
+//    @RequestMapping("/toSimilarTopic.do")
+//    public String toSimilarTopicIndex(@RequestParam("tid") int tid, Model model, HttpServletRequest request) {
+//        System.out.println(request.getRemoteAddr());
+//        //记录访问信息
+//        userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
+//        //列出帖子
+//        PageBean<Post> pageBean = postService.listPostByTimeAndTopic(1, tid, true);
+//        //列出用户
+//        List<User> userList = userService.listUserByTime();
+//        //列出活跃用户
+//        List<User> hotUserList = userService.listUserByHot();
+//        //向模型中添加数据
+//        model.addAttribute("pageBean", pageBean);
+//        model.addAttribute("userList", userList);
+//        model.addAttribute("hotUserList", hotUserList);
+//        model.addAttribute("tid", tid);
+//        return "topicIndex";
+//    }
 
     /**
      * 热度推荐（根据post）
@@ -180,20 +178,10 @@ public class RecommendController {
      * @param postId
      * @return
      */
-    @RequestMapping(value = "/simMedia.do", method = RequestMethod.GET)
-    public List<Long> matchSimilaryMedia(@RequestParam("postId") int postId) {
-        return matchService.matchSimilarMediaById(postId).subList(0, 5);
-    }
-
-
-    private List<Integer> selectByPage(List<Integer> feedList, int num, int page) {
-        if (feedList.size() >= (page + 1) * num)
-            return feedList.subList(page * num, (page + 1) * num);
-        else if (feedList.size() > page * num && feedList.size() < (page + 1) * num)
-            return feedList.subList(page * num, feedList.size());
-        else
-            return Collections.emptyList();
-    }
+//    @RequestMapping(value = "/simMedia.do", method = RequestMethod.GET)
+//    public List<Long> matchSimilaryMedia(@RequestParam("postId") int postId) {
+//        return matchService.matchSimilarMediaById(postId).subList(0, 5);
+//    }
 
 
 }

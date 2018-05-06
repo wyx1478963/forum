@@ -23,7 +23,7 @@
 					<div class="post-choice">
 						<a href="toTopicIndex.do?tid=${tid}" class="post-choice-current">最近</a>
 						<a href="toHotTopic.do?tid=${tid}">最热</a>
-						<a href="toSimilarTopic.do?tid=${tid}" class="post-choice-last">相似文章</a>
+						<a href="recommendTopic.do?tid=${tid}" class="post-choice-last">推荐</a>
 					</div>
 
 					<ul class="post-list">

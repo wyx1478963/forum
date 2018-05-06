@@ -23,7 +23,7 @@
 					<div class="post-choice">
 						<a href="toIndex.do" class="post-choice-current">最近</a>
 						<a href="toHot.do">最热</a>
-						<a href="toSimilar.do" class="post-choice-last">相似文章</a>
+						<a href="recommend.do" class="post-choice-last">推荐</a>
 					</div>
 
 					<ul class="post-list">

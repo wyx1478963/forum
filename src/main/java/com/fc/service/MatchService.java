@@ -38,7 +38,7 @@ public class MatchService {
         logger.info(String.format("load UserContentPool in %dms", end - start));
     }
 
-    public List<Long> matchSimilarMediaById(int postId) {
+    public List<Integer> matchSimilarMediaById(int postId) {
         if (contentInfoPool.isEmpty())
             loadContentInfoPool();
         List<ContentInfo> contentInfos = contentInfoPool;
@@ -52,9 +52,9 @@ public class MatchService {
             contentInfo.setDistance(calcDistanceBetweenUnitVectors(vector, vectorEach));
         }
         List<ContentInfo> contentInfosSort = sortByDistance(contentInfos);
-        List<Long> result = new ArrayList<>();
-        contentInfosSort.forEach(o -> result.add(o.getId()));
-        result.remove(contentInfoById.getId());
+        List<Integer> result = new ArrayList<>();
+        contentInfosSort.forEach(o -> result.add(o.getId().intValue()));
+        result.removeIf(contentInfo -> contentInfo.equals(postId));
         return result;
     }
 

@@ -56,8 +56,6 @@
                         <value>/afterForgetPassword.do</value>
                         <value>/verify.do</value>
                         <value>/listImage.do</value>
-                        <value>/recommend.do</value>
-                        <value>/recommend/topic.do</value>
 
                     </list>
                 </property>

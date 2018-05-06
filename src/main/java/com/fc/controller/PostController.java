@@ -1,10 +1,7 @@
 package com.fc.controller;
 
 import com.fc.model.*;
-import com.fc.service.PostService;
-import com.fc.service.ReplyService;
-import com.fc.service.TopicService;
-import com.fc.service.UserService;
+import com.fc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +27,10 @@ public class PostController {
 
     @Autowired
     private ReplyService replyService;
+
+    //相似文章
+    @Autowired
+    private MatchService matchService;
 
 
     //去发帖的页面
@@ -80,7 +81,8 @@ public class PostController {
         Post post = postService.getPostByPid(pid);
         //获取评论信息
         List<Reply> replyList = replyService.listReply(pid);
-
+        List<Integer> similarList = matchService.matchSimilarMediaById(pid);
+        PageBean<Post> pageBean = postService.listPostByTimeAndRecommend(similarList,1);
         //判断用户是否已经点赞
 
         boolean liked = false;
@@ -90,6 +92,7 @@ public class PostController {
         }
 
         //向模型中添加数据
+        model.addAttribute("pageBean",pageBean);
         model.addAttribute("post",post);
         model.addAttribute("replyList",replyList);
         model.addAttribute("liked",liked);
