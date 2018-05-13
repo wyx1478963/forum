@@ -20,6 +20,22 @@ use df;
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------
+-- Table structure for `user_view_history`
+-- ----------------------------
+CREATE TABLE `user_view_history` (
+  `id` int(11) unsigned zerofill NOT NULL AUTO_INCREMENT,
+  `uid` int(11) DEFAULT NULL,
+  `pid` int(11) DEFAULT NULL,
+  `visit_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8
+
+-- ----------------------------
+-- Records of user_view_history
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for `comment`
 -- ----------------------------
 DROP TABLE IF EXISTS `comment`;
