@@ -45,4 +45,6 @@ public interface PostMapper {
 
     List<Post> getHotPost();
 
+    int deleteByPid(@Param("pid")int pid);
+
 }

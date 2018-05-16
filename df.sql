@@ -22,6 +22,7 @@ SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for `user_view_history`
 -- ----------------------------
+DROP TABLE IF EXISTS `user_view_history`;
 CREATE TABLE `user_view_history` (
   `id` int(11) unsigned zerofill NOT NULL AUTO_INCREMENT,
   `uid` int(11) DEFAULT NULL,
@@ -29,7 +30,7 @@ CREATE TABLE `user_view_history` (
   `visit_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_view_history
@@ -796,6 +797,7 @@ CREATE TABLE `user` (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
+INSERT INTO `user` VALUES ('0', 'admin', '000000', '1', '14773075675632ad6199d5f3e4d908299ac20fc05c72c', '2016-10-24 07:10:22', 'admin', '', 'http://od6v5lenq.bkt.clouddn.com/head.jpg', '', '', '', '0', '4', '0', '0', '0');
 INSERT INTO `user` VALUES ('1', '1@1.com', '000000', '1', '14773075675632ad6199d5f3e4d908299ac20fc05c72c', '2016-10-24 07:10:47', 'DF2034号', '', 'http://od6v5lenq.bkt.clouddn.com/head.jpg', '', '', '', '0', '4', '0', '0', '0');
 INSERT INTO `user` VALUES ('2', '2@2.com', '000000', '1', '14773075685817d1efc76a9384392997c07fba1081c45', '2016-10-24 07:10:48', 'DF7339号', '', 'http://od6v5lenq.bkt.clouddn.com/head.jpg', '', '', '', '0', '1', '0', '0', '0');
 INSERT INTO `user` VALUES ('3', '3@3.com', '000000', '1', '14773075698454b2d54a9d4cc49369350ddb6b4dfdeda', '2016-10-24 07:10:49', 'DF3888号', '', 'http://od6v5lenq.bkt.clouddn.com/head.jpg', '', '', '', '0', '3', '2', '0', '0');

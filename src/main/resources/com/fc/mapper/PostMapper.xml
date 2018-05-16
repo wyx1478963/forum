@@ -38,6 +38,9 @@
         <result column="content" property="content"/>
         <result column="uid" property="authorId"/>
     </resultMap>
+    <delete id="deleteByPid">
+        delete from post where pid = #{pid}
+    </delete>
 
 
     <select id="listPostByUid" resultType="com.fc.model.Post">

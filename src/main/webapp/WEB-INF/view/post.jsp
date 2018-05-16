@@ -44,7 +44,10 @@
                             </c:when>
                         </c:choose>
 						<span class="scan-count"><a href="#">浏览 ${post.scanCount}</a></span>
-					</div>
+                        <c:if test="${sessionScope.uid == post.user.uid || sessionScope.uid == 0}">
+                        <span class="scan-count"><a href="toDeletePost.do?pid=${post.pid}">删除</a></span>&nbsp;
+                        </c:if>
+                    </div>
 				</div>
 				<div class="post-desc">
 					${post.content}

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
@@ -97,6 +98,25 @@ public class PostController {
         model.addAttribute("replyList",replyList);
         model.addAttribute("liked",liked);
         return "post";
+    }
+
+    @RequestMapping("/toDeletePost.do")
+    public String toDeletePost(int pid, Model model, HttpSession session, HttpServletRequest request){
+        Integer sessionUid = (Integer) session.getAttribute("uid");
+        int result = postService.deletePostById(pid);
+        //获取帖子信息
+        userService.record(request.getRequestURL(),request.getContextPath(),request.getRemoteAddr());
+        //列出帖子
+        PageBean<Post> pageBean = postService.listPostByTime(1,false );
+        //列出用户
+        List<User> userList = userService.listUserByTime();
+        //列出活跃用户
+        List<User> hotUserList = userService.listUserByHot();
+        //向模型中添加数据
+        model.addAttribute("pageBean",pageBean);
+        model.addAttribute("userList",userList);
+        model.addAttribute("hotUserList",hotUserList);
+        return "index";
     }
 
     //异步点赞

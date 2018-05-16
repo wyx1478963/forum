@@ -68,6 +68,10 @@ public class PostService {
         return post.getPid();
     }
 
+    public int deletePostById(int pid) {
+        return postMapper.deleteByPid(pid);
+    }
+
     //按时间列出帖子
     public PageBean<Post> listPostByTime(int curPage, boolean hotFlag) {
         //每页记录数，从哪开始
