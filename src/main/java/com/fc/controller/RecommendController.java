@@ -34,6 +34,9 @@ public class RecommendController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    RecommendService recommendService;
+
     private static final Logger logger = LoggerFactory.getLogger(RecommendController.class);
 
     /**
@@ -49,19 +52,23 @@ public class RecommendController {
             Model model, HttpSession session) {
         int userId = (int) session.getAttribute("uid");
 
-        int multiple = 10;
-        String result = alsFilterService.predictMovie(userId, 10 * multiple);
-        List<Integer> postList = hotRecommendService.getPostListByModelAndTopic(result, tid);
-        System.out.println(request.getRemoteAddr());
-        //记录访问信息
-        userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
         //列出帖子
-        PageBean<Post> pageBean = postService.listPostByTimeAndTopicAndRecommend(postList, 1, tid, true);
+        PageBean<Post> pageBean = new PageBean<>();
         //列出用户
         List<User> userList = userService.listUserByTime();
         //列出活跃用户
         List<User> hotUserList = userService.listUserByHot();
-        //向模型中添加数据
+        if (!recommendService.isNewUser(userId)) {
+            int multiple = 10;
+            String result = alsFilterService.predictMovie(userId, 10 * multiple);
+            List<Integer> postList = hotRecommendService.getPostListByModelAndTopic(result, tid);
+            System.out.println(request.getRemoteAddr());
+            //记录访问信息
+            userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
+            //列出帖子
+            pageBean = postService.listPostByTimeAndTopicAndRecommend(postList, 1, tid, true);
+            //向模型中添加数据
+        }
         model.addAttribute("pageBean", pageBean);
         model.addAttribute("userList", userList);
         model.addAttribute("hotUserList", hotUserList);
@@ -79,20 +86,24 @@ public class RecommendController {
     @RequestMapping("/recommend.do")
     public String recommend(HttpServletRequest request, Model model, HttpSession session) {
         int userId = (int) session.getAttribute("uid");
-        int multiple = 10;
-        String result = alsFilterService.predictMovie(userId, 10 * multiple);
-        List<Integer> postList = hotRecommendService.getPostListByModel(result);
-        System.out.println(request.getRemoteAddr());
-        //记录访问信息
-        System.out.println(request.getRemoteAddr());
-        //记录访问信息
-        userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
-        //列出帖子
-        PageBean<Post> pageBean = postService.listPostByTimeAndRecommend(postList, 1);
+        PageBean<Post> pageBean = new PageBean<>();
         //列出用户
         List<User> userList = userService.listUserByTime();
         //列出活跃用户
         List<User> hotUserList = userService.listUserByHot();
+        if (!recommendService.isNewUser(userId)) {
+            int multiple = 10;
+            String result = alsFilterService.predictMovie(userId, 10 * multiple);
+            List<Integer> postList = hotRecommendService.getPostListByModel(result);
+            System.out.println(request.getRemoteAddr());
+            //记录访问信息
+            System.out.println(request.getRemoteAddr());
+            //记录访问信息
+            userService.record(request.getRequestURL(), request.getContextPath(), request.getRemoteAddr());
+            //列出帖子
+            pageBean = postService.listPostByTimeAndRecommend(postList, 1);
+
+        }
         //向模型中添加数据
         model.addAttribute("pageBean", pageBean);
         model.addAttribute("userList", userList);

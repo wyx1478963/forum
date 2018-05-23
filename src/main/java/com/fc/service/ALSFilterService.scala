@@ -2,15 +2,18 @@ package com.fc.service
 
 
 import com.fc.model.CFModel
+import com.fc.util.ConfigUtils
 import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.jblas.DoubleMatrix
 import org.slf4j.{Logger, LoggerFactory}
+import org.springframework.scheduling.annotation.{EnableScheduling, Scheduled}
 import org.springframework.stereotype.Service
 
 @Service
+@EnableScheduling
 class ALSFilterService {
   private[service] val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -25,10 +28,12 @@ class ALSFilterService {
                      numUserBlocks: Int = -1,
                      numProductBlocks: Int = -1,
                      implicitPrefs: Boolean = false,
-                     url: String = "jdbc:mysql://localhost:3306/df?useUnicode=true&characterEncoding=UTF-8&user=root&password=123456")
+                     url: String = "jdbc:mysql://localhost:3306/df?useUnicode=true&characterEncoding=UTF-8&user=%s1&password=%s2")
 
 
+  @Scheduled(cron = "0 0/10 * * * ?")
   def run() = {
+    println("start train")
     val sparkConf = new SparkConf().setAppName("AitLS_Online").setMaster("local[10]")
     val sc = new SparkContext(sparkConf)
     CFModel.sqlContext = new SQLContext(sc)
@@ -41,8 +46,11 @@ class ALSFilterService {
   def train() = {
     val sqlContext = CFModel.sqlContext
     val defaultParams = Params()
+    val user = ConfigUtils.getString("mysql.username")
+    val password = ConfigUtils.getString("mysql.password")
+    val url = defaultParams.url.replaceAll("%s1",user).replaceAll("%s2",password)
     val jbdf = sqlContext.read.format("jdbc").options(
-      Map("url" -> defaultParams.url,
+      Map("url" -> url,
         "dbtable" -> "user_view_history")).load()
 
     val dataTrain = jbdf.rdd.map(t => "" + t(1) + "," + t(2) + ",3")
