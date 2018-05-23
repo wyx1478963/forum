@@ -13,7 +13,7 @@ public class MyConstant {
 
     //域名
     
-    public static final String DOMAIN_NAME = "http://naivee.me/";
+    public static final String DOMAIN_NAME = ConfigUtils.getString("mail.domain");
 
     //三种操作
     public static final int OPERATION_CLICK_LIKE = 1;
